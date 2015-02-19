@@ -9,22 +9,39 @@
 #import "ViewController.h"
 
 @interface ViewController ()
+{
+    PNChannel *my_channel;
+    NSString *username;
+}
+
+@property (weak, nonatomic) IBOutlet UITextView *textView;
+@property (weak, nonatomic) IBOutlet UITextField *sendText;
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomConstraint;
+@property (weak, nonatomic) IBOutlet UINavigationItem *naviBar;
+
 
 @end
 
+
+
 @implementation ViewController
+
+@synthesize textView, sendText, scrollView, naviBar, bottomConstraint;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    username = @"Brian";
     
     PNConfiguration *myConfig = [PNConfiguration configurationForOrigin:@"pubsub.pubnub.com"
                                                              publishKey:@"pub-c-250c7ff6-290a-48c6-96fd-0754fe6a55d9"
                                                            subscribeKey:@"sub-c-80c6653c-b625-11e4-80fe-02ee2ddab7fe"
                                                               secretKey:nil];
     // #1 define new channel name "demo"
-    PNChannel *my_channel = [PNChannel channelWithName:@"demo"
+    my_channel = [PNChannel channelWithName:@"demo"
                                  shouldObservePresence:YES];
+    [naviBar setTitle:my_channel.name];
     
     [PubNub setConfiguration:myConfig];
     [PubNub connect];
@@ -50,7 +67,7 @@
             case PNSubscriptionProcessSubscribedState:
                 NSLog(@"OBSERVER: Subscribed to Channel: %@", channels[0]);
                 // #2 Send a welcome message on subscribe
-                [PubNub sendMessage:[NSString stringWithFormat:@"Hello Everybody!" ] toChannel:my_channel ];
+                [PubNub sendMessage:[NSString stringWithFormat:@"%@ has entered.", username ] toChannel:my_channel ];
                 break;
             case PNSubscriptionProcessNotSubscribedState:
                 NSLog(@"OBSERVER: Not subscribed to Channel: %@, Error: %@", channels[0], error);
@@ -78,18 +95,21 @@
     [[PNObservationCenter defaultCenter] addMessageReceiveObserver:self withBlock:^(PNMessage *message) {
         NSLog(@"OBSERVER: Channel: %@, Message: %@", message.channel.name, message.message);
         
-        // Look for a message that matches "**************"
-        if ( [[[NSString stringWithFormat:@"%@", message.message] substringWithRange:NSMakeRange(1,14)] isEqualToString: @"**************" ])
+        id messageData = message.message;
+        if ([messageData isKindOfClass:[NSDictionary class]])
         {
-            // Send a goodbye message
-            [PubNub sendMessage:[NSString stringWithFormat:@"Thank you, GOODBYE!" ] toChannel:my_channel withCompletionBlock:^(PNMessageState messageState, id data) {
-                if (messageState == PNMessageSent) {
-                    NSLog(@"OBSERVER: Sent Goodbye Message!");
-                    //Unsubscribe once the message has been sent.
-                    [PubNub unsubscribeFrom:@[my_channel] ];
-                }
-            }];
+            NSDictionary *dic = (NSDictionary*) messageData;
+            if ([dic objectForKey:@"username"] != nil)
+            {
+                textView.text = [NSString stringWithFormat:@"%@\n%@: %@", textView.text,
+                             [dic valueForKey:@"username"],[dic valueForKey:@"text"]];
+            }
         }
+        else
+        {
+            textView.text = [NSString stringWithFormat:@"%@\n%@", textView.text, message.message];
+        }
+        
     }];
     // #3 Add observer to catch message send events.
     [[PNObservationCenter defaultCenter] addMessageProcessingObserver:self withBlock:^(PNMessageState state, id data){
@@ -110,6 +130,79 @@
     }];
 }
 
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
+    NSLog(@"Logged");
+
+    [PubNub sendMessage:[NSString stringWithFormat:@"{\"username\":\"%@\", \"text\":\"%@\"}", username, textField.text ] toChannel:my_channel ];
+    textField.text = @"";
+    
+    return YES;
+}
+
+- (void)registerForKeyboardNotifications {
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWasShown:)
+                                                 name:UIKeyboardDidShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillBeHidden:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+    
+}
+
+- (void)deregisterFromKeyboardNotifications {
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIKeyboardDidHideNotification
+                                                  object:nil];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIKeyboardWillHideNotification
+                                                  object:nil];
+    
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    
+    [super viewWillAppear:animated];
+    
+    [self registerForKeyboardNotifications];
+    
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    
+    [self deregisterFromKeyboardNotifications];
+    
+    [super viewWillDisappear:animated];
+    
+}
+
+
+
+- (void)keyboardWasShown:(NSNotification *)notification {
+    
+    NSDictionary* info = [notification userInfo];
+    NSLog(@"%@", info);
+    int keyboardSize = [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height + [[info objectForKey:UIKeyboardCenterBeginUserInfoKey] CGRectValue].size.height;
+    
+    self.bottomConstraint.constant = keyboardSize + 5;
+    [UIView animateWithDuration:0.3 animations:^{[self.sendText layoutIfNeeded];}];
+    CGPoint bottomOffset = CGPointMake(0, self.scrollView.contentSize.height - self.scrollView.bounds.size.height);
+    [self.scrollView setContentOffset:bottomOffset animated:YES];
+}
+
+- (void)keyboardWillBeHidden:(NSNotification *)notification {
+
+    self.bottomConstraint.constant = 5;
+    [UIView animateWithDuration:0.3 animations:^{[self.sendText layoutIfNeeded];}];
+    
+}
 
 
 @end
