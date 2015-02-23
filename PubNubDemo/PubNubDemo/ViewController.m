@@ -12,27 +12,29 @@
 {
     PNChannel *my_channel;
     NSString *username;
+    int keyboard_size;
 }
 
 @property (weak, nonatomic) IBOutlet UITextView *textView;
 @property (weak, nonatomic) IBOutlet UITextField *sendText;
-@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomConstraint;
 @property (weak, nonatomic) IBOutlet UINavigationItem *naviBar;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *sendTextBottomConstraint;
+@property (weak, nonatomic) IBOutlet UIView *inputView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *textViewTopConstraint;
 
 
 @end
 
 
-
 @implementation ViewController
 
-@synthesize textView, sendText, scrollView, naviBar, bottomConstraint;
+@synthesize textView, sendText, naviBar, sendTextBottomConstraint, inputView;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     username = @"Brian";
+    
     
     PNConfiguration *myConfig = [PNConfiguration configurationForOrigin:@"pubsub.pubnub.com"
                                                              publishKey:@"pub-c-250c7ff6-290a-48c6-96fd-0754fe6a55d9"
@@ -107,9 +109,27 @@
         }
         else
         {
-            textView.text = [NSString stringWithFormat:@"%@\n%@", textView.text, message.message];
+            if ([textView.text  isEqual: @""]) {
+                textView.text = [NSString stringWithFormat:@"%@%@", textView.text, message.message];
+            }
+            else
+            {
+                textView.text = [NSString stringWithFormat:@"%@\n%@", textView.text, message.message];
+            }
         }
         
+        if( textView.contentSize.height > textView.frame.size.height)
+        {
+//            CGPoint bottomOffset = CGPointMake(0, self.textView.contentSize.height - self.textView.bounds.size.height + inputView.frame.size.height);
+//            [self.textView setContentOffset:bottomOffset animated:YES];
+            [textView scrollRangeToVisible:NSMakeRange([textView.text length], 0)];
+            //[textView setScrollEnabled:NO];
+            [textView setScrollEnabled:YES];
+        }
+        
+        
+
+
     }];
     // #3 Add observer to catch message send events.
     [[PNObservationCenter defaultCenter] addMessageProcessingObserver:self withBlock:^(PNMessageState state, id data){
@@ -132,12 +152,12 @@
 
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
-    [textField resignFirstResponder];
+    //[textField resignFirstResponder];
     NSLog(@"Logged");
 
     [PubNub sendMessage:[NSString stringWithFormat:@"{\"username\":\"%@\", \"text\":\"%@\"}", username, textField.text ] toChannel:my_channel ];
     textField.text = @"";
-    
+
     return YES;
 }
 
@@ -187,20 +207,32 @@
 
 - (void)keyboardWasShown:(NSNotification *)notification {
     
-    NSDictionary* info = [notification userInfo];
-    NSLog(@"%@", info);
-    int keyboardSize = [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height + [[info objectForKey:UIKeyboardCenterBeginUserInfoKey] CGRectValue].size.height;
+    if (!keyboard_size)
+    {
+        NSDictionary* info = [notification userInfo];
+        NSLog(@"%@", info);
+        keyboard_size = [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height;
+    }
+    sendTextBottomConstraint.constant = keyboard_size;
     
-    self.bottomConstraint.constant = keyboardSize + 5;
-    [UIView animateWithDuration:0.3 animations:^{[self.sendText layoutIfNeeded];}];
-    CGPoint bottomOffset = CGPointMake(0, self.scrollView.contentSize.height - self.scrollView.bounds.size.height);
-    [self.scrollView setContentOffset:bottomOffset animated:YES];
+    //NSRange range = NSMakeRange(textView.text.length - 1, 1);
+    //[textView scrollRangeToVisible:range];
+    if( textView.contentSize.height > textView.frame.size.height)
+    {
+        CGPoint bottomOffset = CGPointMake(0, self.textView.contentSize.height - self.textView.bounds.size.height + inputView.frame.size.height);
+        [self.textView setContentOffset:bottomOffset animated:YES];
+    }
+    
+    [UIView animateWithDuration:0.1 animations:^{[self.inputView layoutIfNeeded];}];
+    
+    
+
 }
 
 - (void)keyboardWillBeHidden:(NSNotification *)notification {
 
-    self.bottomConstraint.constant = 5;
-    [UIView animateWithDuration:0.3 animations:^{[self.sendText layoutIfNeeded];}];
+    self.sendTextBottomConstraint.constant = 0;
+    [UIView animateWithDuration:0.3 animations:^{[self.inputView layoutIfNeeded];}];
     
 }
 
