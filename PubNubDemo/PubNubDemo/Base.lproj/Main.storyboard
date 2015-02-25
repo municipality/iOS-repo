@@ -84,7 +84,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Title" id="j2s-YY-6f3">
-                        <barButtonItem key="rightBarButtonItem" title="item" id="VUO-kr-ipI"/>
+                        <barButtonItem key="rightBarButtonItem" title="item" id="VUO-kr-ipI">
+                            <connections>
+                                <segue destination="cpV-mO-kH2" kind="show" id="KOt-A3-QuB"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="inputView" destination="Y29-Wb-NMj" id="Hx2-sR-FEL"/>
@@ -97,6 +101,79 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="752" y="-203"/>
+        </scene>
+        <!--Bubble Chat View Controller-->
+        <scene sceneID="UhH-aS-43z">
+            <objects>
+                <viewController id="cpV-mO-kH2" customClass="BubbleChatViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="6E5-Fe-ghG"/>
+                        <viewControllerLayoutGuide type="bottom" id="gBn-bu-Tt0"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="wx1-Vw-dxh">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="Gfv-dd-4Vt">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="556"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <prototypes>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="chatCell" rowHeight="57" id="Jhw-cJ-fYZ" customClass="chatCellTableViewCell">
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Jhw-cJ-fYZ" id="dqy-Aq-9GW">
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="cpV-mO-kH2" id="Zxt-Eu-Ur0"/>
+                                    <outlet property="delegate" destination="cpV-mO-kH2" id="ahS-59-wvR"/>
+                                </connections>
+                            </tableView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KJE-Ti-UdS" userLabel="keyboardView">
+                                <rect key="frame" x="0.0" y="556" width="600" height="44"/>
+                                <subviews>
+                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="43C-Uk-Mry">
+                                        <rect key="frame" x="8" y="8" width="522" height="30"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no"/>
+                                        <connections>
+                                            <outlet property="delegate" destination="cpV-mO-kH2" id="UaR-KJ-8G8"/>
+                                        </connections>
+                                    </textField>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="43C-Uk-Mry" secondAttribute="bottom" constant="6" id="5R5-Me-Zq0"/>
+                                    <constraint firstItem="43C-Uk-Mry" firstAttribute="top" secondItem="KJE-Ti-UdS" secondAttribute="top" constant="8" id="7He-lR-NFw"/>
+                                    <constraint firstAttribute="trailing" secondItem="43C-Uk-Mry" secondAttribute="trailing" constant="70" id="bad-Qu-5Qc"/>
+                                    <constraint firstItem="43C-Uk-Mry" firstAttribute="leading" secondItem="KJE-Ti-UdS" secondAttribute="leading" constant="5" id="wdI-Js-Z80"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="centerX" secondItem="Gfv-dd-4Vt" secondAttribute="centerX" id="09E-Z2-tNu"/>
+                            <constraint firstItem="gBn-bu-Tt0" firstAttribute="top" secondItem="KJE-Ti-UdS" secondAttribute="bottom" id="2UA-OR-0iF"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="KJE-Ti-UdS" secondAttribute="trailing" constant="-16" id="7Nw-gX-wmx"/>
+                            <constraint firstItem="KJE-Ti-UdS" firstAttribute="top" secondItem="Gfv-dd-4Vt" secondAttribute="bottom" id="HEp-Yg-Ei3"/>
+                            <constraint firstAttribute="centerX" secondItem="KJE-Ti-UdS" secondAttribute="centerX" id="KtE-lI-XZX"/>
+                            <constraint firstItem="Gfv-dd-4Vt" firstAttribute="leading" secondItem="wx1-Vw-dxh" secondAttribute="leadingMargin" constant="-16" id="QoZ-Fo-GiE"/>
+                            <constraint firstItem="Gfv-dd-4Vt" firstAttribute="top" secondItem="6E5-Fe-ghG" secondAttribute="bottom" constant="-64" id="W0d-OS-wfT"/>
+                            <constraint firstItem="KJE-Ti-UdS" firstAttribute="top" secondItem="Gfv-dd-4Vt" secondAttribute="bottom" id="cQ8-9o-wP8"/>
+                            <constraint firstAttribute="centerX" secondItem="KJE-Ti-UdS" secondAttribute="centerX" id="jJq-VC-Qf5"/>
+                            <constraint firstItem="KJE-Ti-UdS" firstAttribute="leading" secondItem="wx1-Vw-dxh" secondAttribute="leadingMargin" constant="-16" id="n9t-yc-bvz"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="Gfv-dd-4Vt" secondAttribute="trailing" constant="-16" id="oU7-MG-iCV"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="chatTable" destination="Gfv-dd-4Vt" id="8sl-QB-jwE"/>
+                        <outlet property="sendTextBottomConstraint" destination="2UA-OR-0iF" id="pIS-GY-57E"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="TkU-1B-BX0" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1462" y="-203"/>
         </scene>
     </scenes>
 </document>
