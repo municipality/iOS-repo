@@ -81,15 +81,15 @@ static NSString *GeofenceCellIdentifier = @"GeofenceCell";
 }
 
 - (void)addCurrentLocation:(id)sender {
-//    // Update Helper
-//    _didStartMonitoringRegion = NO;
-//    
-//    // Start Updating Location
-//    if ([self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])
-//    {
-//        [self.locationManager requestWhenInUseAuthorization];
-//    }
-//    [self.locationManager startUpdatingLocation];
+    // Update Helper
+    _didStartMonitoringRegion = NO;
+    
+    // Start Updating Location
+    if ([self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])
+    {
+        [self.locationManager requestWhenInUseAuthorization];
+    }
+    [self.locationManager startUpdatingLocation];
 }
 
 
